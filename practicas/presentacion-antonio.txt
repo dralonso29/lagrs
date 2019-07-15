@@ -1,0 +1,43 @@
+antonio.gutierrez@urjc.es
+
+nis-->RPC, ahora se usa LDAP
+El directorio HOME esta virtualizado. No esta en local en la maquina
+vlan para acotar las colisiones
+La red de gsyc es una vlan (una red aparte)
+Antes no habia copias de seguridad de nada
+Todos los pc se conectan por un switch (la caja grandota de las aulas)
+El enlace troncal es de Gb
+Los puertos de los switches son de Mb
+CPD (cuarto de servidores)
+esta deshabilatiado el protocolo icmp para conexiones de fuera de a red de la unversidad, pero no desde dentro
+/var/log/auth.log
+puppet lo usan en la universidad (en los labs) Las configuaciones se aplican como muy tarde cada hora
+rsync y ssh por debajo (usar un tunel)
+preseeds
+system center de windows
+Las preguntas a la hora de instalar un debian o ubuntu, estan en un fichero de texto (preseeds)
+DHCP
+menu PXE 
+Primero se hace un arranque mirando si hay un cambio nuevo (en cuanto a la ISO9, y si no hay cambios, se hace el arranque local
+wakeonlan (la tarjeta de red de la maquina se queda escuchando el magic packet y cuando le llehga, enciende la mquina)
+mirror de paquetes --> se actualiza un fichero con paquetes en el servidor para que en vez de bajartelo por red, te lo bajas del servidor
+La contrase√a de root se cambia con puppet
+ldup (BBDD en formato texto)
+firewall de capa alta para restringir el acceso a por ejemplo, paginas web
+iptables para restringir protocolos, ips, etc a bajo nivel
+NAS (Network Attached Storage): Si se muere una maquina, coges la copia de seguridad y la lanzas en otro sitio para seguir trabajando
+Proxmox
+Diferencias entre Ansible y Puppet:
+Gestores de configuracion.Aplicar cambios a TODAS las maquinas
+Ejecuta la configuracion de los manifiestos. Ahi esta descritos los cambios que hay que aplicar a cada maquina descrita.
+Las maquinas cada hora van al server de puppet y aplican los cambios que se hallan hecho. Se lanza un cron en el server de puppet
+Se usa un lenguaje declarativo (par de clave valor)
+Es idempotente. No consiste en a√adir cosas, sino en querer que algo este, y si ya esta no se hace nada
+agente puppet
+Ansible tiene un modo push que lanza la configuacion del server hacia los clientes. En puppet son los clientes los que solicitan al seerver la configuracion
+En la universidad conviene usar puppet porque si una maquina esta apagada, no se le van a aplicar los cambios. Por tanto, con puppet no te tienes que preocupar de 
+si una maquina esta o no apagada
+Ansible es mejor para servidores (maquinas que no se van a apagar)
+En Ansible no te hace falta un cliente servidor (agentless)
+
+

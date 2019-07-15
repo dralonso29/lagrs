@@ -1,0 +1,2 @@
+para borrar el /var/t,p, ejecutar el script:
+/usr/local/bin/clean-var-tmp.sh

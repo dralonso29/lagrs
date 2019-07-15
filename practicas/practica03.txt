@@ -1,0 +1,60 @@
+Practica03 LAGRS
+Apartado 3.4 Cron
+
+1.
+Para este partado necesitamos hacer un ssh a las maquinas de la escuela, pero a las virtuales: ssh alonsod@alpha
+Editamos el fichero de crontab: crontab -e
+
+SHELL=/bin/bash
+MAILTO=d.rodriguezalon@alumnos.urjc.es
+PATH=/usr/local/bin:/usr/bin:/bin
+# m h dayofmonth month dow command
+*/1 * * * * touch /tmp/test_cron_alonsod
+
+
+La salida es la siguiente, para comprobar que funciona:
+alonsod@alpha:/tmp$ while true; do ls -l test_cron_alonsod; sleep 1; done
+-rw-r--r-- 1 alonsod alumnos 0 nov 29 13:09 test_cron_alonsod
+-rw-r--r-- 1 alonsod alumnos 0 nov 29 13:09 test_cron_alonsod
+-rw-r--r-- 1 alonsod alumnos 0 nov 29 13:09 test_cron_alonsod
+-rw-r--r-- 1 alonsod alumnos 0 nov 29 13:09 test_cron_alonsod
+-rw-r--r-- 1 alonsod alumnos 0 nov 29 13:09 test_cron_alonsod
+-rw-r--r-- 1 alonsod alumnos 0 nov 29 13:09 test_cron_alonsod
+-rw-r--r-- 1 alonsod alumnos 0 nov 29 13:09 test_cron_alonsod
+-rw-r--r-- 1 alonsod alumnos 0 nov 29 13:09 test_cron_alonsod
+-rw-r--r-- 1 alonsod alumnos 0 nov 29 13:09 test_cron_alonsod
+-rw-r--r-- 1 alonsod alumnos 0 nov 29 13:10 test_cron_alonsod
+-rw-r--r-- 1 alonsod alumnos 0 nov 29 13:10 test_cron_alonsod
+-rw-r--r-- 1 alonsod alumnos 0 nov 29 13:10 test_cron_alonsod
+
+
+Vemos que la hora ha cambiado y eso es gracias a cron.
+
+2.
+# m h  dom mon dow   command
+SHELL=/bin/bash
+MAILTO=d.rodriguezalon@alumnos.urjc.es
+PATH=/usr/local/bin:/usr/bin:/bin
+# m h dayofmonth month dow command
+#*/1 * * * * touch /tmp/test_cron_alonsod
+*/1 * * * * /home/alumnos/alonsod/lagrs/practica03/escribe_log
+
+De esta forma ejecutamos el script escribe_log, cuyo contenido es:
+
+alonsod@alpha02:~/lagrs/practica03$ cat escribe_log 
+#!/bin/bash
+echo -n 'probando cron ' >> ~/lagrs/log.txt
+date >> ~/lagrs/log.txt
+
+3.
+Ahora ejecutamos la misma crontab pero ahora a las 9 de la mañana de lunes a viernes
+
+# m h  dom mon dow   command
+SHELL=/bin/bash
+MAILTO=d.rodriguezalon@alumnos.urjc.es
+PATH=/usr/local/bin:/usr/bin:/bin
+# m h dayofmonth month dow command
+#*/1 * * * * touch /tmp/test_cron_alonsod
+0 9 * * 1-5 /home/alumnos/alonsod/lagrs/practica03/escribe_log
+
+

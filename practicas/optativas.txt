@@ -1,0 +1,10 @@
+Practica 3.5 Monitor.py: 
+He hecho la opcional de la ~ (virgulilla), y para depurar los fallos, he redirigido la salida de errores y la estandar a un fichero en /tmp:
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin:/usr/bin/python:/usr/bin/python2.7:/usr/lib:/etc:/usr
+# m h dayofmonth month dow command
+#*/1 * * * * echo -n AAAA >> /tmp/test_cron_alonsod
+0 9 * * 1-5 /home/alumnos/alonsod/lagrs/practica03/escribe_log
+15 8 * * * /usr/bin/python -i -tt /home/alumnos/alonsod/lagrs/practica03/monitor.py > /tmp/log_alonsod_cron.txt 2>&1
+15 20 * * * /usr/bin/python -i -tt /home/alumnos/alonsod/lagrs/practica03/monitor.py -f > /tmp/log_alonsod_cron2.txt 2>&1
+

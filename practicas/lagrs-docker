@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [ ! -d $HOME/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es ]; 
+then
+	mkdir -p $HOME/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es
+fi
+
+#rsync -arzvvS ~mortuno/dockerserver-1819-keys/ $HOME/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es/
+cp $HOME/Desktop/DOCKER/KEYS/* $HOME/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es
+
+chmod 600 $HOME/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es/*
+
+# variables de entorno
+
+echo "export DOCKER_TLS_VERIFY=\"1\"" >> $HOME/.bashrc
+echo "export DOCKER_TLS_VERIFY=\"1\"" >> $HOME/.bash_profile
+echo "export DOCKER_HOST=\"tcp://212.128.254.5:2376\"" >> $HOME/.bashrc
+echo "export DOCKER_HOST=\"tcp://212.128.254.5:2376\"" >> $HOME/.bash_profile
+echo "export DOCKER_CERT_PATH=\"$HOME/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es\"" >> $HOME/.bashrc
+echo "export DOCKER_CERT_PATH=\"$HOME/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es\"" >> $HOME/.bash_profile
+echo "export DOCKER_MACHINE_NAME=\"dockerserver.aulas.gsyc.urjc.es\"" >> $HOME/.bashrc
+echo "export DOCKER_MACHINE_NAME=\"dockerserver.aulas.gsyc.urjc.es\"" >> $HOME/.bash_profile
+

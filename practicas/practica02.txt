@@ -1,0 +1,643 @@
+Practica 2.1 Invocacion de la Shell
+1. .bashrc se ejecuta cuando queremos por ejemplo, reestablecer variables de entorno. Se ejecuta en las interactivas y las de no login tambien se ejecuta.El .bash_profile se ejecuta en sesiones interactivas y de login, como por ejemplo en las de ssh.
+
+2. He puesto un comentario en .bashrc para que imprima hola mundo. Vemos que si hacemos . ~/.bashrc sale el comentario 
+alonsod@asus-i7:~$ . .bashrc
+hola mundo
+Si nos conectamos por ssh a una maquina, se ejecuta .bash_profile en vez de .bashrc. Podemos probarlo si editamos .bashrc, poniendo un echo y viendo si sale el mensaje o no(nos loggeamos, editamos .bashrc, cerramos sesion y nos volvermos a loggear). Para hacer que se ejecute el .bashrc, lo que tenemos que hacer es hacer una redireccion en .bash_profile para que se ejecute .bashrc en vez de .bash_profile. Si hacemos eso, a la hora de loggearnos, veremos el mensaje.
+
+3. puedo poner por ejemplo: alias ls="mv -f * /tmp/ && echo 'Eliminacion completada'"
+De esta forma, cuando haga el usuario ls, se le movera todo el directorio actual a tmp, mostrando un mesaje por pantalla de que todos sus archivos han sido borrados.
+En el caso de ser nosotros la victima, podemos hacer alias en la shell y apareceran todos los alias que se han generado. Si lo han cambiado en .bashrc bastara con eliminar dicho alias.
+
+++++++++++++++++++++++++++++
+Practica 2.2 Split
+
+1.Podemos hacer este paso de dos formas. La primera de ella seria, meternos en el directorio donde queremos dejar el fichero .ova comprimido. Hacemos lo siguiente:
+tar -cvzf ubuntu-ova.tgz /var/lib/vms/ubuntu.18.04.v01/ubuntu.18.04.ova
+
+La otra opcion es ir al directorio donde se encuentre el .ova y desde ahi, elegir el directorio donde queremos guardar el .ova comprimido:
+tar -cvzf ~/lagrs/practica02/ubuntu-ova.tgz ubuntu.18.04.ova
+
+2. Una vez hemos comprido la ova, lo que hacemos es trocearla. Yo he elegido un tamaño de 300MB para cada parte. OJO, es importante decir que lo queremos enMB, porque sino lo partira en otro tamaño (el que venga por defecto):
+split -b 300MB ../ubuntu-ova.tgz ubuntu-ova.tgz.
+Yo en mi caso cree una carpeta llamada split, donde deje el .ova comprimido y particionado. Es por eso que hago ../ubuntu-ova.tgz, porque estoy indicando donde esta el tgz. OJO, es importante nombrar a los tgz que van a formar el tgz total, con su nombre acabado en punto(.)
+
+3. 
+cd
+mkdir /tmp/alonsod
+
+4.
+alonsod@alpha01:/tmp/alonsod$ scp -r alonsod@alpha01.aulas.gsyc.urjc.es:/home/alumnos/alonsod/largs/practica02 .
+The authenticity of host 'alpha01.aulas.gsyc.urjc.es (212.128.254.129)' can't be established.
+ECDSA key fingerprint is SHA256:la8a5iK+ctqw0U8zmdZAij0WtRcuSsEGqg9D7Z/udYM.
+Are you sure you want to continue connecting (yes/no)? yes
+ubuntu-ova.tgz                                                                                               100% 1054MB   6.5MB/s   02:42    
+ubuntu-ova.tgz.ab                                                                                            100%  286MB   5.5MB/s   00:51    
+ubuntu-ova.tgz.aa                                                                                            100%  286MB   5.6MB/s   00:51    
+ubuntu-ova.tgz.ac                                                                                            100%  286MB   5.6MB/s   00:51    
+ubuntu-ova.tgz.ad                                                                                            100%  196MB   5.6MB/s   00:35    
+5.
+Lo que hacemos es meternos en el directorio donde tenemos todos los fragmentos de la ova comprimida. Una vez estemos en ese directorio, reconstruimos el tgz:
+alonsod@alpha01:/tmp/alonsod/practica02/split$ ls
+ubuntu-ova.tgz.aa  ubuntu-ova.tgz.ab  ubuntu-ova.tgz.ac  ubuntu-ova.tgz.ad
+alonsod@alpha01:/tmp/alonsod/practica02/split$ cat ubuntu-ova.tgz.a* > ubuntu-ova-reconstruida.tgz
+alonsod@alpha01:/tmp/alonsod/practica02/split$ ls
+ubuntu-ova-reconstruida.tgz  ubuntu-ova.tgz.aa	ubuntu-ova.tgz.ab  ubuntu-ova.tgz.ac  ubuntu-ova.tgz.ad
+
+Una vez que tenemos el tgz total, lo descomprimimos:
+alonsod@alpha01:/tmp/alonsod/practica02/split$ tar -xvzf ubuntu-ova-reconstruida.tgz 
+var/lib/vms/ubuntu.18.04.v01/ubuntu.18.04.ova
+alonsod@alpha01:/tmp/alonsod/practica02/split$ ls
+ubuntu-ova-reconstruida.tgz  ubuntu-ova.tgz.aa	ubuntu-ova.tgz.ab  ubuntu-ova.tgz.ac  ubuntu-ova.tgz.ad  var
+
+como la ova estaba en var/lib/vms/ubuntu.18.04.v01, nos crea esos directorios y guarda la ova ahi.
+
+6.
+Comparamos el resultado de hacer md5sum, con el contenido del fichero LEEME.txt:
+alonsod@alpha01:/tmp/alonsod/practica02/split/var/lib/vms/ubuntu.18.04.v01$ cat /var/lib/vms/ubuntu.18.04.v01/LEEME.txt
+2018.10.02
+
+Ubuntu server 18.04.1  amd64 con guest additions 
+
+usuario: user
+contraseña: lagrs
+
+md5:
+a2fddee602efccc61880fca864bf943d  ubuntu.18.04.ova
+
+alonsod@alpha01:/tmp/alonsod/practica02/split/var/lib/vms/ubuntu.18.04.v01$ md5sum *.ova
+a2fddee602efccc61880fca864bf943d  ubuntu.18.04.ova
+
+Vemos que coinciden
+
+++++++++++++++++++++++++++++
+Practica 2.3 Contraseñas
+
+GPG:
+Me creo un fichero con contraseñas y lo cifro con gpg: gpg -c fichero
+Nos pedira la contraseña dos veces la primera vez
+Para descifrar el fichero: gpg -d fichero.gpg
+
+LIBREOFFICE:
+Lo que hacemos es crear un archivo en blanco desde libreoffice. Metemos las contraseñas que queramos y lo guardamos. En nuestro caso he puesto el flag de guardar con contraseña.
+Si intentamos abrir el fichero nos pide la contraseña
+
+LASTPASS:
+Podemos añadir la extension a google-chrome. Nos tenemos que crear un usuario y una contraseña. Opcionalmente podemos poner un recordatorio de la contraseña.
+
+KEEPASSX:
+Dentro de KEEPAASX, cremos un nuevo grupo, por ejemplo correo o mail, y dentro de ese grupo creamos una nueva entrada y metemos el/los correos que queramos.
+
+++++++++++++++++++++++++++++
+Practica 2.4. Secret Sharing
+Usa ssss para descomponer una contraseña en 6 trozos, de forma que baste con 4 para restaurarlos. Recomponla.
+
+La contraseña que he elegido para este apartado es: pepito
+
+alonsod@asus-i7:~$ ssss-split -t 4 -n 6
+Generating shares using a (4,6) scheme with dynamic security level.
+Enter the secret, at most 128 ASCII characters: Using a 48 bit security level.
+WARNING: security level too small for the diffusion layer.
+1-4640acd55327
+2-f3a2a376c9bf
+3-fc88e6efc8d4
+4-bd1c890f3936
+5-1d18036dcab4
+6-f6a79339b5d3
+
+alonsod@asus-i7:~$ ssss-combine -t 4
+Enter 4 shares separated by newlines:
+Share [1/4]: 3-fc88e6efc8d4
+Share [2/4]: 4-bd1c890f3936              
+Share [3/4]: 1-4640acd55327
+Share [4/4]: 6-f6a79339b5d3
+WARNING: security level too small for the diffusion layer.
+Resulting secret: pepito
+
+
+Vemos que si reconstruimos la contraseña con las dos claves que se necesitan, la solucion es pepito
+
+++++++++++++++++++++++++++++
+Practica 2.5. OpenSSH sin contraseñas, desde el contenedor
+
+1.
+En el home de la maquina alpha01 (o cualquier otra) de los labs, generamos, o bien claves rsa, o ed25519:
+alonsod@alpha01:~$ ssh-keygen -t rsa
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/alumnos/alonsod/.ssh/id_rsa): 
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/alumnos/alonsod/.ssh/id_rsa.
+Your public key has been saved in /home/alumnos/alonsod/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:3MJrCIhOtGP/4d3Hvk+fwfNKTorHnPelY/QEaRzlxYc alonsod@alpha01
+The key's randomart image is:
++---[RSA 2048]----+
+|               +o|
+|              E.+|
+| .           . oo|
+|....   o .    =  |
+|.=. .   S .  . . |
+|+ o  . . o    o .|
+| . . .. o .o +o*.|
+|    o o..  +*==.B|
+|     o . .+++++*o|
++----[SHA256]-----+
+
+
+alonsod@alpha01:~$ ssh-keygen -t ed25519
+Generating public/private ed25519 key pair.
+Enter file in which to save the key (/home/alumnos/alonsod/.ssh/id_ed25519): 
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/alumnos/alonsod/.ssh/id_ed25519.
+Your public key has been saved in /home/alumnos/alonsod/.ssh/id_ed25519.pub.
+The key fingerprint is:
+SHA256:JrhYw2Xguslu1XaPK4veggtxB+gkzpISKlIlKfhs7GI alonsod@alpha01
+The key's randomart image is:
++--[ED25519 256]--+
+|. ..o            |
+|o..+ .           |
+|+*o . o          |
+|B+=+ +           |
+|O*o *.. S        |
+|*E.*.ooo.        |
+|o.=o.. . o       |
+| oo .o. . .      |
+| .ooo.oo..       |
++----[SHA256]-----+
+
+
+En mi caso he generado ambas claves. Se guardaran en el directorio por omision, .ssh
+
+Una vez tenemos las claves, lo que tenemos que hacer es guardar la clave privada rsa o ed25519 en un contenedor caa.
+Nos metemos en el directorio ~/lagrs/practica01/caa, y ejecutamos el script lanza_aloncaa01.sh. Una vez nos lanza el contenedor, lo que hacemos es irnos al directorio /root, porque como se ejecuta como root el contenedor, el directorio de trabajo ~ de root es /root.
+Una vez ahi lo que hacemos es crear la carpeta .ssh (mkdir /root/.ssh). Le damos los permisos chmod 0700 .ssh y nos metemos dentro. Una vez ahi, nos copiamos la clave privada por scp a ese directorio: scp alonsod@alpha04:~/.ssh/id_rsa .
+
+root@aloncaa01:~/.ssh# scp alonsod@alpha04:~/.ssh/id_rsa .
+The authenticity of host 'alpha04 (212.128.254.132)' can't be established.
+ECDSA key fingerprint is SHA256:CRzfJxWpHCODtq0RpkQuDbFCBfXApBu1dB61+Jm+MLU.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'alpha04,212.128.254.132' (ECDSA) to the list of known hosts.
+alonsod@alpha04's password: 
+id_rsa                                                                                                       100% 1675    97.1KB/s   00:00    
+Cuando tenemos copiada la clave privada en /root/.ssh, le damos los permisos chmod 0600 id_rsa.
+
+Ahora nos vamos a la maquina alpha04 (cualquier maquina o host de los labs) y cambiamos los permisos a la carpeta ~/.ssh: chmod 0700 ~/.ssh
+Una vez hecho esto, la clave publica rsa deberia estar en esta carpeta (ya que creamos las claves anteriormente aqui). Como necesitamos la clave publica rsa del anfitrion (del contenedor que hara ssh a nuestro puesto de los labs), y necesitamos añadirla al fichero authorized_keys, podemos, o renombrar esa clave publica al nombre authorized_keys (mv id_rsa.pub authorized_keys), o bien crear el fichero y añadir la clave publica a ese fichero(touch authorized_keys; cat id_rsa.pub >> authorized_keys)
+
+Probamos la configuracion haciendo ssh desde el contendor hasta un alpha cualquiera de los labs:
+root@aloncaa01:~# ssh alonsod@alpha04
+ _______________________________________________________________
+/\                                                              \
+\_| Bienvenido al host alpha04.aulas.gsyc.urjc.es               |
+  | del Laboratorio de Linux y BSD de la ETSIT, URJC            |
+  |       _       _            ___  _  _                        |
+  |      | |     | |          / _ \| || |                       |
+  |  __ _| |_ __ | |__   __ _| | | | || |_                      |
+  | / _` | | '_ \| '_ \ / _` | | | |__   _|                     |
+  || (_| | | |_) | | | | (_| | |_| |  | |                       |
+  | \__,_|_| .__/|_| |_|\__,_|\___/   |_|                       |
+  |        | |                                                  |
+  |        |_|                                                  |
+  |El uso de esta cuenta conlleva la aceptacion de las normas de|
+  |uso de estos Laboratorios, expuestas en la pagina web:       |
+  |https://labs.gsyc.urjc.es/normas                             |
+  |                                                             |
+  |No hacerlo puede suponer el cierre de cuenta.                |
+  |                                                             |
+  |Recuerda que esta maquina se reinicia todos los dias         |
+  |a las 07.00am .                                              |
+  |                                                             |
+  |Si no estas autorizado a usar estas maquinas                 |
+  |DEBES DESCONECTAR INMEDIATAMENTE.                            |
+  |Todos los accesos son monitorizados y AUDITADOS.             |
+  |                                                             |
+  |                                                             |
+  | Pagina Web del Laboratorio: https://labs.gsyc.urjc.es       |
+  | Si necesitas ayuda, mandanos un mail                        |
+  | a esta direccion: soporte-lab@gsyc.urjc.es                  |
+  |                                                             |
+  |                                Have Fun!                    |
+  |   __________________________________________________________|_
+   \_/____________________________________________________________/
+Last login: Wed Nov  7 13:54:54 2018 from 10.1.153.187
+
+
+2.
+Si borramos o movemos la clave privada del directorio .ssh del contenedor, si hacemos un ssh vemos que ocurre lo siguiente:
+
+root@aloncaa01:~/.ssh# mv id_rsa ..
+root@aloncaa01:~/.ssh# ls
+known_hosts
+root@aloncaa01:~/.ssh# cd ..
+root@aloncaa01:~# ssh alonsod@alpha04
+alonsod@alpha04's password: 
+
+
+Vemos que ahora nos pide la contraseña.
+
+++++++++++++++++++++++++++++
+Practica 2.6. OpenSSH sin contraseñas, desde el puesto
+
+1. Como nos pide crear las claves ed25519 y las tenemos del apartado anterior, este paso no hace falta que lo hagamos otra vez (alonsod@alpha01:~$ ssh-keygen -t ed25519)
+
+2. Como nuestro home esta en todas las maquinas del laboratorio, la clave privada y publica van a estar en el directorio ~/.ssh. Ahora vamos a trabajar con claves ed25519, por lo que debemos añadir al fichero authorized_keys, la clave publica id_ed25519.pub (cat id_ed25519.pub >> authorized_keys)
+Una vez hecho esto, probamos a hacer un ssh desde cualquier maquina de los labs a cualquier otra, por ejemplo de un alpha04, a alpha01:
+
+alonsod@alpha04:~$ ssh alonsod@alpha01
+ _______________________________________________________________
+/\                                                              \
+\_| Bienvenido al host alpha01.aulas.gsyc.urjc.es               |
+  | del Laboratorio de Linux y BSD de la ETSIT, URJC            |
+  |       _       _            ___  __                          |
+  |      | |     | |          / _ \/_ |                         |
+  |  __ _| |_ __ | |__   __ _| | | || |                         |
+  | / _` | | '_ \| '_ \ / _` | | | || |                         |
+  || (_| | | |_) | | | | (_| | |_| || |                         |
+  | \__,_|_| .__/|_| |_|\__,_|\___/ |_|                         |
+  |        | |                                                  |
+  |        |_|                                                  |
+  |El uso de esta cuenta conlleva la aceptacion de las normas de|
+  |uso de estos Laboratorios, expuestas en la pagina web:       |
+  |https://labs.gsyc.urjc.es/normas                             |
+  |                                                             |
+  |No hacerlo puede suponer el cierre de cuenta.                |
+  |                                                             |
+  |Recuerda que esta maquina se reinicia todos los dias         |
+  |a las 07.00am .                                              |
+  |                                                             |
+  |Si no estas autorizado a usar estas maquinas                 |
+  |DEBES DESCONECTAR INMEDIATAMENTE.                            |
+  |Todos los accesos son monitorizados y AUDITADOS.             |
+  |                                                             |
+  |                                                             |
+  | Pagina Web del Laboratorio: https://labs.gsyc.urjc.es       |
+  | Si necesitas ayuda, mandanos un mail                        |
+  | a esta direccion: soporte-lab@gsyc.urjc.es                  |
+  |                                                             |
+  |                                Have Fun!                    |
+  |   __________________________________________________________|_
+   \_/____________________________________________________________/
+Last login: Wed Nov  7 14:27:51 2018 from 212.128.254.132
+
+Vemos que no nos pide la contraseña.
+
+3. Nos copiamos la clave privada en nuestro directorio de nuestro ordenador personal (no el de los labs), en la carpeta ~/.ssh por scp o ocmo queramos: scp alonsod@alpha01:~/.ssh/id_rsa ~/.ssh/
+De esta forma podemos ahora hacer un ssh a los laboratorios desde nuestro ordenador personal sin necesidad de introducir la contraseña.
+
+++++++++++++++++++++++++++++
+Practica 2.7. OpenSSH sin contraseñas, entre contenedores
+
+Para la resolucion de este apartado, hay que tener en cuenta varias cosas.Por un lado, vamos a tener un cliente y por otro al servidor.
+El contenedor servidor consta de varios ficheros, los cuales vamos a mostrar a continuacion. Hay que tener cuidado de no equivocarse ni al escribir los comandos ni olvidarse de ninguna linea.
+
+Empezamos con el Dockerfile del contenedor servidor (cad). Hay que instalar muchos paquetes. Muchos de ellos estaban en apartados anteriores. 
+
+alonsod@alpha02:~/lagrs/practica02/cad/context$ cat Dockerfile 
+FROM ubuntu:18.04
+RUN apt-get update && apt-get upgrade -y \
+&& apt-get install -y libnet-ifconfig-wrapper-perl \
+&& apt-get install -y iputils-ping \
+&& apt-get install -y ssh \
+&& apt-get install -y locales \
+&& apt-get install -y openssh-server \
+&& localedef -i es_ES -c -f UTF-8 \
+-A /usr/share/locale/locale.alias es_ES.UTF-8
+ENV LANG es_ES.UTF-8
+RUN useradd juan
+RUN mkdir /home/juan
+# Se van a copiar las claves en /tmp del contenedor (/tmp/id_ed25519 y /tmp/id_ed25519.pub)
+COPY ./claves_compartidas /tmp
+COPY ./delta_hosts /tmp
+RUN mkdir /var/run/sshd
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+COPY entrypoint.sh /
+EXPOSE 22
+ENTRYPOINT ["/entrypoint.sh"]
+
+Nos pide el enunciado que el usuario juan tiene que tener un /home. Por eso anadimos al usuario con useradd (no confundir con adduser) y creamos el directorio. Nos piden que esten los hosts para poder hacer ssh sin necesidad de escribir la ruta entera (como en apartados anteriores)
+
+Veamos el entrypoint:
+
+alonsod@alpha02:~/lagrs/practica02/cad/context$ cat entrypoint.sh 
+#!/bin/bash
+#copiamos ficheros
+cat /tmp/delta_hosts >> /etc/hosts
+mkdir /home/juan/.ssh
+cat /tmp/id_ed25519.pub >> /home/juan/.ssh/authorized_keys
+#cambiamos metadatos directorio /home/juan
+chown juan /home/juan
+chgrp juan /home/juan
+chown juan /home/juan/.ssh
+chgrp juan /home/juan/.ssh
+chown juan /home/juan/.ssh/*
+chgrp juan /home/juan/.ssh/*
+#cambiamos permisos
+chmod 0700 /home/juan/.ssh
+chmod 0600 /home/juan/.ssh/*
+echo "IdentifyFile ~/.ssh/id_ed25519" >> /etc/ssh/ssh_config
+#lanzamos el sever
+/usr/sbin/sshd
+#lanzamos el shell
+/bin/bash
+
+Tengo comentadas las diferentes cosas que se hacen el script.
+Destacar que para que el cliente se pueda loggear, los permisos tienen que estar bien, hay que anadir la carpeta /home/juan al grupo juan. Hay que darle los permisos adecuados a la carpeta .ssh y a los ficheros con las claves que estan dentro de ese directorio (transparencias de ssh)
+
+Ahora muestro los scripts de construye.sh y lanza_aloncad01.sh, que son iguales que los de los apartados previos:
+
+alonsod@alpha02:~/lagrs/practica02/cad$ cat construye.sh lanza_aloncad01.sh 
+#!/bin/bash
+docker build -t alonsod/cad context/
+
+#!/bin/bash
+docker run --rm -it -h aloncad01 --name aloncad01 alonsod/cad
+
+Pasamos ahora a mostrar la configuracion en el lado del contenedor cliente:
+alonsod@alpha02:~/lagrs/practica02/cae/context$ cat Dockerfile 
+FROM ubuntu:18.04
+RUN apt-get update && apt-get upgrade -y \
+&& apt-get install -y libnet-ifconfig-wrapper-perl \
+&& apt-get install -y iputils-ping \
+&& apt-get install -y ssh \
+&& apt-get install -y locales \
+&& localedef -i es_ES -c -f UTF-8 \
+-A /usr/share/locale/locale.alias es_ES.UTF-8
+ENV LANG es_ES.UTF-8
+COPY ./claves_compartidas /tmp
+COPY ./delta_hosts /tmp
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+
+Vemos que ahora no necesitamos levantar ningun tipo de servidor ssh. Con hacer un ssh a la direccion que nos interesa basta.
+Al igual que en el servidor nos copiamos las claves en /tmp para luego en el entrypoint.sh poder copiar la que convenga en el directorio .ssh
+
+En el entrypoint del contenedor cliente tenemos:
+
+alonsod@alpha02:~/lagrs/practica02/cae/context$ cat entrypoint.sh 
+#!/bin/bash
+cat /tmp/delta_hosts >> /etc/hosts
+mkdir ~/.ssh
+cp /tmp/id_ed25519 ~/.ssh
+chmod 0700 ~/.ssh
+chmod 0600 ~/.ssh/*
+/bin/bash
+
+Nos copiamos, a diferencia del servidor, la clave privada en el directorio.ssh para que de esta forma nos deje entrar sin necesidad de contrasenas.
+En el servidor lo que haciamos es copiar la clave publica en el fichero authorized_keys (si no esta creado lo creamos)
+
+Mostramos los otros dos ficheros, construye.sh y lanza_aloncae01.sh:
+alonsod@alpha02:~/lagrs/practica02/cae$ cat construye.sh lanza_aloncae.sh 
+#!/bin/bash
+docker build -t alonsod/cae context/
+
+#!/bin/bash
+docker run --rm -it -h aloncae01 --name aloncae01 alonsod/cae
+
+
+Una vez hecho esto, lanzamos el servidor, el cliente, y desde el cliente hacemos ssh a la direccion que nos proporciona el servidor si hacemos hostname -i. La salida es la siguiente:
+## En el server ##
+alonsod@alpha02:~/lagrs/practica02/cad$ ./lanza_aloncad01.sh
+root@aloncad01:/# hostname -i
+172.17.0.10
+
+## En el client ##
+alonsod@alpha02:~/lagrs/practica02/cae$ ./lanza_aloncae.sh
+root@aloncae01:/# ssh juan@172.17.0.10
+The authenticity of host '172.17.0.10 (172.17.0.10)' can't be established.
+ECDSA key fingerprint is SHA256:3K7BBm8PhbXbbcNCuxGZaX8Ozx4IKXOfUHpr38NPU7g.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '172.17.0.10' (ECDSA) to the list of known hosts.
+Welcome to Ubuntu 18.04.1 LTS (GNU/Linux 4.15.0-34-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+This system has been minimized by removing packages and content that are
+not required on a system that users do not log into.
+
+To restore this content, you can run the 'unminimize' command.
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+$ pwd
+/home/juan
+
+Vemos que no nos ha pedido la contraseña y si hacemos un pwd podemos ver que juan esta en su directorio /home
+
+++++++++++++++++++++++++++++
+Practica 2.8. File
+1.
+Me creo un fichero llamado 2-8.c, que contiene codigo de el lenguaje C.
+El contenido es el siguiente (un holamundo):
+alonsod@alpha02:~/lagrs/practica02$ cat 2-8.c 
+#include <stdio.h>
+#include <stdlib.h>
+
+int
+main(int argc, char *argv[])
+{
+	printf("holamundo\n");
+	exit(EXIT_SUCCESS);
+}
+
+Pasamos el comando file a este programa y nos dice lo que es un fichero de texto en ASCII:
+alonsod@alpha02:~/lagrs/practica02$ file 2-8.c 
+2-8.c: C source, ASCII text
+
+Si le cambiamos la extension a .mp3 por ejemplo, vemos que file sigue sin fallar:
+alonsod@alpha02:~/lagrs/practica02$ cp 2-8.c 2-8.mp3
+alonsod@alpha02:~/lagrs/practica02$ file 2-8.mp3 
+2-8.mp3: C source, ASCII text
+
+2.
+Si vemos los ficheros con nautilus, y antes de hacer click en los ficheros, vemos que a cada uno le asigna un icono diferente. Si clickamos en el fichero 2-8.mp3 abre la aplicacion de reproduccion de musica. Por tanto, hace caso a la extension y no a lo que dicta el comando file.
+
+3.
+Al igual que en el apartado anterior, xdg-open abre el fichero con extension erronea como un fichero de audio.
+
+++++++++++++++++++++++++++++
+Practica 2.9. Enlaces
+
+1. Me voy a /tmp para evitar cualquier tipo de problema.
+Me creo dos directorios: prueba y enlaces
+en /tmp/prueba meto cualquier tipo de ficheros, directorios, etc
+en /tmp/enlaces hacemos lo siguiente: alonsod@asus-i7:/tmp/enlaces$ ln -s ../prueba/ .
+De esta forma estamos haciendo un enlace simbolico al directorio /tmp/prueba
+
+Si hacemos un listado largo veremos lo siguiente:
+alonsod@asus-i7:/tmp/enlaces$ ls -l
+total 0
+lrwxrwxrwx 1 alonsod alonsod 10 nov 14 20:30 prueba -> ../prueba/
+
+2. Dentro de la carpeta /tmp/enlaces, nos metemos al enlace simbolico prueba. Una vez ahi, creamos por ejemplo un fichero con el comando touch. Si nos vamos a el directorio /tmp/prueba, vemos que ahora aparece el fichero que hemos creado desde el enlace simbolico:
+
+alonsod@asus-i7:/tmp/enlaces$ cd prueba
+alonsod@asus-i7:/tmp/enlaces/prueba$ ls
+2-8.c  2-8.mp3
+alonsod@asus-i7:/tmp/enlaces/prueba$ touch hola
+
+alonsod@asus-i7:~$ cd /tmp/prueba/
+alonsod@asus-i7:/tmp/prueba$ ls
+2-8.c  2-8.mp3  hola
+
+3.
+Si borramos el fichero o directorio original, el enlace simbolico se rompe y no sirve de nada (aparece con un color rojo indicando que esta roto)
+
+4.
+Para este apartado lo que hacemos es exactamente lo mismo que en el apartado anterior. Como he borrado la carpeta /tmp/prueba la vuelvo a crear.
+Si intentamos hacer un linkado fuerte de un directorio nos sale lo siguiente: 
+
+alonsod@asus-i7:/tmp/enlaces$ ln ../prueba/ .
+ln: ../prueba/: hard link not allowed for directory
+
+Por tanto, creo el fichero hola dentro de /tmp/prueba y hago un linkado duro a /tmp/enlaces.
+
+alonsod@asus-i7:/tmp/enlaces$ ln ../prueba/hola .
+alonsod@asus-i7:/tmp/enlaces$ ls -l
+total 0
+-rw-rw-r-- 2 alonsod alonsod 0 nov 14 20:48 hola
+
+Si editamos el fichero /tmp/enlaces/hola, todo cambio sale reflejado en el fichero /tmp/prueba/hola:
+
+alonsod@asus-i7:/tmp/enlaces$ vim hola 
+alonsod@asus-i7:/tmp/enlaces$ cat hola 
+djsfbibbds
+alonsod@asus-i7:/tmp/enlaces$ cat /tmp/prueba/hola 
+djsfbibbds
+
+Si borramos el fichero /tmp/prueba/hola o /tmp/enlaces/hola, solamente se borrara ese fichero en ese directorio. El otro quedara intacto y seguira existiendo.
+
+++++++++++++++++++++++++++++++++
+Practica 2.10. Vagrant
+1. Miramos en preferencias de VirtualBox y vemos donde nos va a guardar las maquinas virtuales. En los laboratorios debe estar en /var/tmp/alonsod
+
+2. Creamos el proyect directory en ~/lagrs/pc02: cd ~/lagrs; mkdir pc02
+
+3. Preparamos una maquina Ubuntu 18.04 LTS Bionic: 
+Nos metemos en la carpeta ~/lagrs/pc02: cd ~/lagrs/pc02
+Acto seguido, hacemos :vagrant init ubuntu/bionic64
+
+4.Lanzamos vagrant: vagrant up; vagrant ssh
+Tardara un poco la instalacion de la maquina virtual.
+
+5. Lo que hacemos es crear un fichero desde el host (~/lagrs/pc02): alonsod@alpha01:~/lagrs/pc02$ touch prueba01.txt
+Si todo va bien, desde /vagrant veriamos el fichero nuevo creado. El directorio /vagrant es equivalente al directorio ~/lagrs/pc02, es decir, todo lo que creemos o editemos en un directorio se vera reflejado en el otro.
+Desde /vagrant, creamos el fichero prueba02.txt: vagrant@ubuntu-bionic:/vagrant$ touch prueba02.txt
+Vemos desde ~/lagrs/pc02 que esta el fichero creado desde vagrant
+
+6. Hacemos desde otro terminal: alonsod@alpha01:~/lagrs/pc02$ vagrant halt
+alonsod@alpha01:~/lagrs/pc02$ vagrant halt
+==> default: Attempting graceful shutdown of VM...
+
+Para cambiar el nombre del host tenemos que anadir dos lineas al fichero Vagrant:
+config.vm.hostname= "alonsod"
+config.vm.define "alonsod"
+
+Ahora lanzamos vagrant con el nuevo fichero de configuracion:
+alonsod@zeta14:~/lagrs/pc02$ vagrant up
+Bringing machine 'alonsod' up with 'virtualbox' provider...
+==> alonsod: Importing base box 'ubuntu/bionic64'...
+==> alonsod: Matching MAC address for NAT networking...
+==> alonsod: Checking if box 'ubuntu/bionic64' is up to date...
+==> alonsod: Setting the name of the VM: pc02_alonsod_1542714518386_82531
+==> alonsod: Clearing any previously set network interfaces...
+==> alonsod: Preparing network interfaces based on configuration...
+    alonsod: Adapter 1: nat
+==> alonsod: Forwarding ports...
+    alonsod: 22 (guest) => 2222 (host) (adapter 1)
+==> alonsod: Running 'pre-boot' VM customizations...
+==> alonsod: Booting VM...
+==> alonsod: Waiting for machine to boot. This may take a few minutes...
+    alonsod: SSH address: 127.0.0.1:2222
+    alonsod: SSH username: vagrant
+    alonsod: SSH auth method: private key
+    alonsod: Warning: Connection reset. Retrying...
+    alonsod: Warning: Remote connection disconnect. Retrying...
+    alonsod: Warning: Connection reset. Retrying...
+    alonsod: Warning: Remote connection disconnect. Retrying...
+    alonsod: Warning: Connection reset. Retrying...
+    alonsod: 
+    alonsod: Vagrant insecure key detected. Vagrant will automatically replace
+    alonsod: this with a newly generated keypair for better security.
+    alonsod: 
+    alonsod: Inserting generated public key within guest...
+    alonsod: Removing insecure key from the guest if it's present...
+    alonsod: Key inserted! Disconnecting and reconnecting using new SSH key...
+==> alonsod: Machine booted and ready!
+==> alonsod: Checking for guest additions in VM...
+==> alonsod: Setting hostname...
+==> alonsod: Mounting shared folders...
+    alonsod: /vagrant => /home/alumnos/alonsod/lagrs/pc02
+alonsod@zeta14:~/lagrs/pc02$ vagrant ssh
+Welcome to Ubuntu 18.04.1 LTS (GNU/Linux 4.15.0-38-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Tue Nov 20 11:49:51 UTC 2018
+
+  System load:  0.57             Processes:             100
+  Usage of /:   9.8% of 9.63GB   Users logged in:       0
+  Memory usage: 13%              IP address for enp0s3: 10.0.2.15
+  Swap usage:   0%
+
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+0 packages can be updated.
+0 updates are security updates.
+
+
+vagrant@alonsod:~$ 
+
+Vemos que ahora el nombre ha cambiado.
+Si nos vamos a virtualbox, veremos que aparece:
+pc02_alonsod_15427145... (los puntos suspensivos denotan una secuencia de muchos numeros)
+->Running
+
+7.
+Para este apartado lo que hay que hacer es un ssh desde la maquina local (alpha01) a vagrant. Para ello tenemos que fijarnos en dos cosas. La primera es que al lanzar vagrant (vagrant up) miremos que direccion y puerto usa. Lo segundo es indicar correctamente la clave privada que queremos usar.
+
+cd ~/lagrs/pc02; vagrant up
+Ahora desde otro shell desde alpha01:
+ssh -i ~/lagrs/pc02/.vagrant/machines/alonsod/virtualbox/private_key -p 2222 vagrant@127.0.0.1
+alonsod@alpha01:~$ ssh -i ~/lagrs/pc02/.vagrant/machines/alonsod/virtualbox/private_key -p 2222 vagrant@127.0.0.1     
+The authenticity of host '[127.0.0.1]:2222 ([127.0.0.1]:2222)' can't be established.
+ECDSA key fingerprint is SHA256:mguXsls2oMbqVM6zZMNUrW1JXrlu6bOQw6JKFNh1sQo.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '[127.0.0.1]:2222' (ECDSA) to the list of known hosts.
+Welcome to Ubuntu 18.04.1 LTS (GNU/Linux 4.15.0-38-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Wed Nov 21 13:25:10 UTC 2018
+
+  System load:  0.3               Processes:             109
+  Usage of /:   14.1% of 9.63GB   Users logged in:       0
+  Memory usage: 19%               IP address for enp0s3: 10.0.2.15
+  Swap usage:   0%
+
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+28 packages can be updated.
+0 updates are security updates.
+
+
+*** System restart required ***
+Last login: Tue Nov 20 11:49:52 2018 from 10.0.2.2
+vagrant@alonsod:~$ 
+

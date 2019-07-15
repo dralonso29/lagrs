@@ -1,0 +1,30 @@
+Guia para instalar docker, virtualbox, y hacer la parte de la maquina virtual en nuestro portatil
+
+1. Instalar docker en nuestro pc si no lo tenemos instalado:
+wget https://get.docker.com -O get-docker.sh
+ls | grep docker #para mirar si nos lo hemos bajado
+bash get-docker.sh #ejecutamos el script
+
+2. Instalamos virtualbox:
+Elegimos el paquete para nuestra distribucion:
+> https://www.virtualbox.org/wiki/Linux_Downloads
+Vamos a necesitar una extension porque sino nos dara fallo con el USB 2.0. La extension se llama VirtualBox 5.2.20 Oracle VM VirtualBox Extension Pack:
+> https://www.virtualbox.org/wiki/Downloads
+
+3. Vamos a necesitar, tanto el .ova, como las claves, y el script que exportara las variables de entorno.
+
+Primero descargamos las claves. Para ello, voy a crear una carpeta en el Escritorio llamada DOCKER:
+cd
+mkdir ~/Desktop/DOCKER/KEYS # las claves las guardamos en /KEYS
+cd Desktop/DOCKER/KEYS
+scp <nombre_usuario_labs>@alpha02.aulas.gsyc.urjc.es:~/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es/* .
+
+Ahora descargaremos el .ova. Es recomendable comprimirla antes de hacer scp (en un tar vale):
+cd ..
+scp <nombre_usuario_labs>@alpha02.aulas.gsyc.urjc.es:~/var/lib/vms/ubuntu.18.04.v01/*.tgz .
+
+Voy a dejar el script que preparo Antonio, ligeramente modificado para que sea ejecitarlo y ya:
+Cuando tengamos el script descargado, hacemos:
+bash lagrs-docker
+
+Una vez ejecutado el script, lanzamos virtualbox, ponemos la imagen y en principio deberia funcionar. 

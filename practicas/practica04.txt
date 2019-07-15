@@ -1,0 +1,282 @@
+David Rodriguez Alonso alonsod
+
+Practica 4.1. screen
+
+2.
+Creamos el fichero ~/lagrs/practica04/tictacalonsod, cuyo contenido es:
+#!/bin/bash
+fichero_salida=/tmp/log.$USER.txt
+while true
+do
+	sleep 1
+	echo -n "tic" >> $fichero_salida
+	sleep 1
+	echo "tac" >> $fichero_salida
+done
+
+Con tail -f vemos las ultimas lineas de un fichero por salida estandar, a la espera de que se realicen cambios en el fichero.
+
+3.
+Nos conectamos por ssh a la maquina alpha01: ssh alonsod@alpha01
+
+4.
+Copiamos el fichero ~/lagrs/practica04/tictacalonsod a /tmp
+
+5.
+Si no habiamos hecho el punto 3, lo hacemos ahora: ssh alonsod@alpha01
+
+6.
+En la maquina remota (la de ssh), hacemos screen. Para poder desasociarnos de la sesion de screen, necesitaremos otra ventana, haciendo control a c. Si no hacemos esto, no podremos escribir screen -d (a no ser de que ejecutemos el script en background con &)
+Una vez hecho eso, lo que podemos hacer es lanzar el script /tmp/tictacalonsod (dandole previamente permisos de ejecucion: chmod u+x tictacalonsod)
+
+7.
+Cuando ya tenemos lanzado el script (./tictacalonsod), lo que hacemos es desasociarnos tecleando screen -d (o bien desde la misma ventana, siempre y cuando hallamos lanzado el script en background, o bien desde otra ventana de screen, de la misma sesion) El resultado que aparecera por salida estandar es el siguiente:
+alonsod@alpha01:~$ screen -ls
+There is a screen on:
+	23827.pts-0.alpha01	(03/12/18 20:20:55)	(Detached)
+1 Socket in /run/screen/S-alonsod.
+
+8.
+Como vemos nos hemos desasociado. Para poder reasociarnos, tecleamos screen -r pts-0.alpha01
+
+Una vez hacemos eso, si volvemos a introducir screen -ls:
+alonsod@alpha01:~$ screen -ls
+There is a screen on:
+        23827.pts-0.alpha01     (03/12/18 20:20:55)     (Attached)
+1 Socket in /run/screen/S-alonsod.
+
+Veremos que ahora nos hemos reasociado a la sesion de screen. El fichero log.alonsod.txt deberia estar lleno de mensajes, ya que aunque nos hemos desasociado de la sesion de screen, el script ha seguido funcionando.
+alonsod@alpha01:/tmp$ cat log.alonsod.txt
+tictac
+tictac
+tictac
+tictac
+tictac
+tictac
+tictac
+tictac
+tictac
+
+9.
+Nos vamos a la otra ventana de screen (la que creamos anteriormente con control a c). Para pasar entre ventanas hacemos control a "
+Lanzamos vmstat 2, por lo que cada dos segundos tendremos desglosada informacion de la memoria del sistema:
+alonsod@alpha01:~$ vmstat
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+ 3  0      0 12331444 506112 2183672    0    0     2     1   24    1  0  0 100  0  0
+
+10.
+Nos movemos entre ventanas con control a "
+
+11.
+Nos vamos a la primera ventana y hacemos control a A. Nos deja cambiar el nombre. Hacemos lo mismo con la segunda. A una de ellas la llamaremos reloj y a la ptra control de memoria. Debemos estar dentro de cada ventana para poder hacer eso.
+
+12.
+En la ventana reloj o control de memoria tecleamos screen -d. Nos hemos desasociado de esa sesion. Si hacemos screen, crearemos otra sesion de screen. Ejecutamos top en esta nueva sesion.
+
+13.
+Para cambiar el nombre de esta ventana de la nueva sesion, lo que hacemos es quitar top, presionando la q. Cambiamos el nombre con control a A, y le pomemos de nombre top
+
+14.
+Nos desasociamos de la nueva sesion de screen, y nos desloggeamos de la sesion ssh:
+alonsod@alpha01:~$ screen -r pts-0.alpha01
+[remote detached from 23827.pts-0.alpha01]
+alonsod@alpha01:~$ screen
+[remote detached from 25860.pts-0.alpha01]
+alonsod@alpha01:~$ logout
+Connection to alpha01 closed.
+
+
+15.
+Volvemos a entrar a alpha01. Si hacemos screen -ls veremos que las dos sesiones de screen siguen abiertas:
+alonsod@alpha01:~$ screen -ls
+There are screens on:
+	25860.pts-0.alpha01	(03/12/18 21:11:29)	(Detached)
+	23827.pts-0.alpha01	(03/12/18 20:20:56)	(Detached)
+2 Sockets in /run/screen/S-alonsod.
+
+Para poder recuperar cada una de las sesiones bastaria con introducir los comandos:
+screen -r 25860.pts-0.alpha01
+screen -r 23827.pts-0.alpha01
+
+16.
+Matamos los procesos y hacemos logout:
+alonsod@alpha01:~$ screen -r 25860.pts-0.alpha01
+[screen is terminating]
+alonsod@alpha01:~$ screen -r pts-0.alpha01
+[screen is terminating]
+alonsod@alpha01:~$ logout
+Connection to alpha01 closed.
+
++++++++++++++++++++++++++++++++++++
+Apartado 4.2 FHS (Filesystem Hierarchy Standard)
+
+--> 24 junio 2015, Ejercicio 2: Nos pregunta por el directorio /dev/sda1. Esto significa que dentro de todos los dispositivos, hay uno de ellos que se llama sda1, que generalmente va relacionado con memoria, disco, etc. Si intentamos acceder a esta zona de memoria, nos da error porque al tratarse de un bloque puede que o bien no este montado o no tengamos acceso debido a que son zonas de memoria sin traducir.
+--> Diciembre 2017: Diferencias entre /lib, /usr/lib y /usr/local/lib.
+/lib: Contiene librerias esenciales para ejecutables del sistema
+/usr/lib: Contiene librerias para ejecutables de menor importancia, no esenciales
+/usr/local/lib: Contiene librerias de programas no incluidos de forma estandar en la distribucion,
+sino que cada administrador local anade.
+
++++++++++++++++++++++++++++++++++++
+Apartado 4.3 Recode
+
+1.
+Generamos los ficheros f1.txt, f2.txt y f3.txt (touch f1.txt, ...)
+
+2.
+Para comprobar la codificacion de los ficheros, hacemos file <nombre-fichero>
+Muestro el contenido de los tres ficheros tambien para ver si corresponde el tipo de codificacion empleado con el contenido:
+
+alonsod@alpha01:~/lagrs/practica04/recode$ cat *
+holaaaaa como estamos
+Esto es una castaña
+���
+alonsod@alpha01:~/lagrs/practica04/recode$ file *
+f1.txt: ASCII text
+f2.txt: UTF-8 Unicode text
+f3.txt: ISO-8859 text
+
+Vemos que el fichero f1.txt no tiene ningun caracter raro. Por eso lo codifica con ASCII
+El fichero f2.txt tiene caracteres del español como la tilde
+El fichero f3.txt tiene letras rusas (cirilico) por eso vemos que se codifican en ISO-8859
+
+3.
+Por ejemplo, para el fichero f2.txt, que contenia la palabra castaña, al convertirlo en formato windows1252, vemos que la ñ ya no aparece como tal sino con un simbolo extraño. Eso es debido que esa letra no esta recogida en ese formato:
+
+alonsod@alpha01:~/lagrs/practica04/recode$ cat f2.windows1252.txt
+Esto es una casta�a
+
+++++++++++++++++++++++++++++++++++++++
+Practica 4.4 X11 Forwarding
+
+1.
+O bien desde nuestro portatil o desde una de las maquinas del laboratorio, hacemos ssh con el flag -X, para que a la hora de lanzar aplicaciones, que nos lance la interfaz grafica.
+
+ssh -X alpha01
+
+Podemos lanzar aplicaciones como el navegador, editor de texto, etc.
+
+2.
+Lanzamos firefox y nos vamos a la pagina https://miip.es: Tu IP es 212.128.254.129 (en alpha01)
+
+3.
+Lanzamos un navegador ahora en la maquina local(alpha17), y nos vamos a la misma pagina:Tu IP es 212.128.254.145
+
+Vemos que las ips no coinciden, lo cual es normal porque al fin y al cabo estamos en maquinas diferentes.
+
+++++++++++++++++++++++++++++++++++++++
+Practica 4.5 VNC
+
+1.
+Podemos saber esto si al intentar completar con el tabulador, xfce4 lo autocompleta. Si ejecutamos openbox-session, nos aparece un mensaje de que no esta instalado.
+
+2.
+Como no esta creado el directorio ~/.vnc, lo creamos. Cambiamos los permisos
+del fichero xstartup, que va dentro de esa carpeta, chmod 755 xstartup.
+
+alonsod@zeta14:~$ mkdir .vnc
+alonsod@zeta14:~$ cd .vnc/
+alonsod@zeta14:~/.vnc$ touch xstartup
+alonsod@zeta14:~/.vnc$ vim xstartup
+alonsod@zeta14:~/.vnc$ chmod 755 xstartup
+alonsod@zeta14:~/.vnc$ ls -l
+total 4
+-rwxr-xr-x 1 alonsod alumnos 43 Dec  5 14:36 xstartup
+
+El contenido del fichero es el siguiente:
+
+alonsod@zeta14:~/.vnc$ cat xstartup
+#!/bin/bash
+xrdb ~/.Xresources
+startxfce4&
+xterm&
+
+3.
+Hacemos ssh a una maquina virtual (alpha, beta, etc)
+
+alonsod@alpha:~$ vncserver -geometry 1024x768 -depth 16
+
+You will require a password to access your desktops.
+
+Password:
+Verify:
+Would you like to enter a view-only password (y/n)? y
+Password:
+Verify:
+
+New 'X' desktop is alpha:5
+
+Starting applications specified in /home/alumnos/alonsod/.vnc/xstartup
+Log file is /home/alumnos/alonsod/.vnc/alpha:9.log
+
+Nos pedira una contrase�a. En mi caso es: patata
+
+4.
+Nos conectamos a alpha, que es el servidor que ha lanzado vnc, mediante el comando vinagre:
+ vinagre alpha:5905
+Si nos fijamos el puerto es: 5900 + Display port = 5
+
+5.
+Podemos, o bien lanzar un shell con el interfaz grafico (clicando con el boton derecho), o en el fichero xstartup, poner un xterm& o un shell de gnome.
+
+6.
+Desde nuestro portatil o desde una maquina de los laboratorios, nos conectamos por ssh a alpha (maquina que esta lanzado vnc)
+Una vez ahi, hacemos ps aux para ver que procesos estan corriendo en la maquina.
+
+alonsod@alpha:~$ ps aux | grep alonsod | grep vnc
+alonsod   6982  0.1  0.3  48684 14864 pts/4    S    11:31   0:00 Xtightvnc :5 -desktop X -auth /home/alumnos/alonsod/.Xauthority -geometry 1024x768 -depth 16 -rfbwait 120000 -rfbauth /home/alumnos/alonsod/.vnc/passwd -rfbport 5905 -fp /usr/share/fonts/X11/misc/,/usr/share/fonts/X11/Type1/,/usr/share/fonts/X11/75dpi/,/usr/share/fonts/X11/100dpi/ -co /etc/X11/rgb
+
+Filtramos por nombre de usuario, y buscamos las lineas referentes a vnc. Como podemos ver, aparece el puerto donde se esta corriendo vnc (5905), el display port (:5), etc.
+
+Una vez hemos terminado, cerramos el server de esta forma. No basta con cerrar solo el cliente.
+alonsod@alpha:~$ vncserver -kill :5
+Killing Xtightvnc process ID 6021
+
++++++++++++++++++++++++++++++++
+4.6 Tunel ssh inverso
+
+Para este ejercicio, la peculiaridad que vamos a tener es que el proxy y el cliente va a ser la misma maquina. En el caso de querer usar una maquina proxy habria que configurar algun fichero de configuracion en /etc, para decirle a la maquina en concreto que tiene que actuar como tal.
+
+1. Nos descargamos los ficheros y los dejamos en ~/lagrs/pc02, para luego poder ver esos ficheros desde vagrant (romanserver.py)
+
+2. Probamos los scripts de python para ver que es lo que hacen. Le pasas al servidor un numero en decimal y te lo convierte a numero romano
+
+3. Lanzamos la maquina de vagrant, que esta en el directorio ~/lagrs/pc02 con vagrant up; vagrant ssh.
+
+4. Instalamos python en vagrant (sudo apt install python)
+
+5. Como ya adelantabamos en el apartado 1, lanzamos el servidor en vagrant: vagrant@alonsod:/vagrant$ ./romanserver.py TCP 8000
+
+6.  Hacemos que el servicio este disponible en el puerto 9000 del localhost de la maquina remota: vagrant@alonsod:/vagrant$ ssh -R 9000:localhost:8000 alonsod@alpha05.aulas.gsyc.urjc.es
+
+7. Hacemos ssh a la maquina alpha05, que es proxy y cliente a la vez:
+
+alonsod@alpha05:~/lagrs/pc02$ ./romanclient.py localhost TCP 9000 10
+X
+
+En el servidor veremos lo siguiente:
+
+vagrant@alonsod:/vagrant$ ./romanserver.py TCP 8000
+Connected by ('127.0.0.1', 46096)
+10
+
+8.
+En alpha05:
+alonsod@alpha05:~/lagrs/pc02$ netstat -tupan | grep 9000
+(Not all processes could be identified, non-owned process info
+ will not be shown, you would have to be root to see it all.)
+tcp        0      0 127.0.0.1:9000          0.0.0.0:*               LISTEN      -
+tcp        0      0 127.0.0.1:33222         127.0.0.1:9000          TIME_WAIT
+
+En alpha05 vemos que envia las peticiones por el puerto 9000 hacia el puerto 8000.
+
+En vagrant:
+vagrant@alonsod:/vagrant$ netstat -tupan | grep 8000
+(Not all processes could be identified, non-owned process info
+ will not be shown, you would have to be root to see it all.)
+tcp        0      0 0.0.0.0:8000            0.0.0.0:*               LISTEN      10115/python
+tcp        0      0 127.0.0.1:46102         127.0.0.1:8000          FIN_WAIT2   10039/ssh
+tcp        0      0 127.0.0.1:8000          127.0.0.1:46102         CLOSE_WAIT  10115/python
+
+Vemos que por defecto esta escuchando el puerto 8000. Hemos lanzado en el lado del cliente un a peticion y vemos que tambien hay conexiones que estan por terminar.

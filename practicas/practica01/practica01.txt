@@ -1,0 +1,634 @@
+largs-Practica1
++++++++++++++++++++++++++++++++++++++++++++++
+--Práctica 1.1. Directorios de las prácticas
+cd
+mkdir largs
+chmod 700 largs
+cd largs
+mkdir practica01
+cd practica01
+touch practica01.txt
++++++++++++++++++++++++++++++++++++++++++++++
+--Práctica 1.2. Uso básico de vi
+vi
+:w ejemplo.txt
+a
+(metemos ahora el texto plano)
+guardamos con :wq
+corregimos las faltras de ortografia: vi ejemplo.txt
+R
+cambiamos las faltas de ortografia
+guardamos con :wq
++++++++++++++++++++++++++++++++++++++++++++++
+--Práctica 1.3. Uso de un editor sin gráficos
+1.
+Voy a empezar a hacer las practicas en vi o vim, porque me parece que
+a medida que lo use, me va a ser de mayor utilidad, por los atajos de teclado.
+2.
+27-09-2018: Para acceder al final del fichero, en modo orden, pulso G. Con u, en modo orden, deshago el ultimo cambio realizado.
+
++++++++++++++++++++++++++++++++++++++++++++++
+--Práctica 1.4. Uso básico de imágen
+1.
+alonsod@zeta14:~$ docker run --rm -it ubuntu bash
+root@d4b8bd4c9e5e:/# ls
+bin   dev  home  lib64  mnt  proc  run   srv  tmp  var
+boot  etc  lib   media  opt  root  sbin  sys  usr
+root@d4b8bd4c9e5e:/#
+2.
+alonsod@zeta14:~$ docker run --rm -it --name alonc01 -h alonc01 ubuntu bash
+root@alon01:/#
+3.
+Es mejor hacer docker ps -a para ver todos los contenedores (tanto los activos como los que no)
+
+alonsod@zeta14:~$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED              STATUS              PORTS               NAMES
+ff2a762e7a34        ubuntu              "bash"              7 seconds ago        Up 5 seconds                            alonc01
+e090b3f84e5a        ubuntu              "bash"              12 seconds ago       Up 11 seconds                           adoring_fermi
+
+Lo que vemos es que aparecen los contenedores que hemos creado en los otros terminales. Nos aparecen por orden cronologico, el que hemos renombrado nosotros y el ubuntu que no le hemos dado nombre.
+
+alonsod@zeta14:~$ docker images
+REPOSITORY           TAG                 IMAGE ID            CREATED             SIZE
+jluzonlopez/banner   latest              04831d800ebf        34 seconds ago      130MB
+ralvarezmar/banner   latest              9091e33f8f80        8 minutes ago       130MB
+<none>               <none>              57f58bf4d7cc        13 minutes ago      130MB
+test/banner          latest              086d23ea442d        About an hour ago   130MB
+<none>               <none>              eafa5fe719bc        About an hour ago   130MB
+<none>               <none>              8bf97abde18c        5 days ago          117MB
+hello-world          latest              4ab4c602aa5e        3 weeks ago         1.84kB
+ubuntu               18.04               cd6d8154f1e1        3 weeks ago         84.1MB
+ubuntu               latest              cd6d8154f1e1        3 weeks ago         84.1MB
+nginx                latest              06144b287844        3 weeks ago         109MB
+debian               latest              f2aae6ff5d89        3 weeks ago         101MB
+
+Ahora vemos las imagenes que se han ido creando. podemos ver incluso la de nuestros compa�eros ya que estamos compartiendo el mismo servidor.
+4.
+si paramos la ejecucion de los contenedores, al hacer docker ps -a, ya no veremos en la lista de contenedores los dos contenedores que habiamos lanzado en los apartados anteriores.
+5.
+No es persistente porque si yo creo un archivo txt en el home de una imagen de ubuntu y cierro el contenedor y lo vuelvo a abrir, el fichero txt desaparece.
++++++++++++++++++++++++++++++++++++++++++++++
+--Práctica 1.5.
+1.
+Nos vamos a gogle y creamos una cuenta en docker hub. Usuario: alonsod29
+2.
+Creamos una carpeta llamada context por ejemplo (/home/alumnos/alonsod/lagrs/practica01/context)
+Ahi dentro vamos a guardar dos archivos: entrypoint.sh y Dockerfile
+
+alonsod@zeta14:~/largs/practica01/context$ cat entrypoint.sh
+#!/bin/bash
+banner bienvenido
+banner a
+banner $HOSTNAME
+
+alonsod@zeta14:~/largs/practica01/context$ cat Dockerfile
+FROM ubuntu:18.04
+RUN apt-get update && apt-get upgrade -y && apt-get install -y sysvbanner
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+
+una vez hecho esto, en el directorio padre de context(/home/alumnos/alonsod/lagrs/practica01), construimos la imagen:
+
+alonsod@alpha01:~/largs/practica01$ docker build -t alonsod29/banner context/
+Sending build context to Docker daemon  3.072kB
+Step 1/4 : FROM ubuntu:18.04
+ ---> cd6d8154f1e1
+Step 2/4 : RUN apt-get update && apt-get upgrade -y && apt-get install -y sysvbanner
+ ---> Using cache
+ ---> a6d9ab25b26c
+Step 3/4 : COPY entrypoint.sh /
+ ---> 356bbbaf2c4e
+Step 4/4 : ENTRYPOINT ["/entrypoint.sh"]
+ ---> Running in 40de2414cc2f
+Removing intermediate container 40de2414cc2f
+ ---> 153b930ab331
+Successfully built 153b930ab331
+Successfully tagged alonsod29/banner:latest
+
+alonsod@alpha01:~/largs/practica01$ docker images | grep alo
+alonsod29/banner     latest              153b930ab331        15 seconds ago      130MB
+
+NOTA: EN EL CASO DE CREAR MAL UNA IMAGEN, LA PODEMOS BORRAR DEL REPOSITORIO DE IMAGENES CON docker rmi <id-imagen>. SI VEMOS QUE NOS DICE QUE NO SE PUEDE BORRAR PORQUE ESTA EN EJECUCION, LO QUE PODEMOS HACER ES FORZAR EL BORRADO CON EL FLAG -f: docker rmi -f <id-imagen>
+
+3.
+alonsod@alpha01:~$ docker run --rm alonsod29/banner
+
+ #####      #    ######  #    #  #    #  ######  #    #     #    #####    ####
+ #    #     #    #       ##   #  #    #  #       ##   #     #    #    #  #    #
+ #####      #    #####   # #  #  #    #  #####   # #  #     #    #    #  #    #
+ #    #     #    #       #  # #  #    #  #       #  # #     #    #    #  #    #
+ #    #     #    #       #   ##   #  #   #       #   ##     #    #    #  #    #
+ #####      #    ######  #    #    ##    ######  #    #     #    #####    ####
+
+
+   ##
+  #  #
+ #    #
+ ######
+ #    #
+ #    #
+
+         #####   #####   #####   #####                           #####  #
+ #####  #     # #     # #     # #     #  ######    ##    ###### #     # #    #
+ #    # #     #       # #       #        #        #  #   #      #     # #    #
+ #    #  ######  #####  ######  ######   #####   #    #  #####   #####  #######
+ #    #       #       # #     # #     #  #       ######  #      #     #      #
+ #    # #     # #     # #     # #     #  #       #    #  #      #     #      #
+ #####   #####   #####   #####   #####   ######  #    #  #       #####       #
+
+4.
+Lo que hay que hacer es a�adir al entrypoint.sh, en la ultima linea /bin/bash para que despues de generar el banner lance una shell.
+Una vez editado y guardado el fichero en el mismo sitio donde estaba, lo que hacemos es hacer un build tal cual lo hemos hecho en apartado 2.
+Para lanzar la imagen, lo que tenemos que hacer ahora es poner el flag -it tambien para que nos lance la shell y tome los comandos que le pasamos por pantalla:
+
+5.
+alonsod@alpha01:~/largs/practica01$ docker run --rm -it alonsod29/banner
+
+ #####      #    ######  #    #  #    #  ######  #    #     #    #####    ####
+ #    #     #    #       ##   #  #    #  #       ##   #     #    #    #  #    #
+ #####      #    #####   # #  #  #    #  #####   # #  #     #    #    #  #    #
+ #    #     #    #       #  # #  #    #  #       #  # #     #    #    #  #    #
+ #    #     #    #       #   ##   #  #   #       #   ##     #    #    #  #    #
+ #####      #    ######  #    #    ##    ######  #    #     #    #####    ####
+
+
+   ##
+  #  #
+ #    #
+ ######
+ #    #
+ #    #
+
+   #     #####           #####   #####           #####  #######  #####   #####
+  ##    #     #  ###### #     # #     #  ###### #     # #       #     # #     #
+ # #          #  #            # #     #  #      #     # #       #             #
+   #     #####   #####   #####   ######  #####   #####   #####  ######   #####
+   #    #        #            #       #  #      #     #       # #     # #
+   #    #        #      #     # #     #  #      #     # #     # #     # #
+ #####  #######  ######  #####   #####   ######  #####   #####   #####  #######
+
+root@12e39e85627f:/# exit
+
+6.
+alonsod@alpha01:~/largs/practica01$ docker push alonsod29/banner
+The push refers to repository [docker.io/alonsod29/banner]
+1ea7081dcc45: Pushed
+aa215495836b: Mounted from clijosor/banner
+8d7ea83e3c62: Mounted from clijosor/banner
+6a061ee02432: Mounted from clijosor/banner
+f73b2816c52a: Mounted from clijosor/banner
+6267b420796f: Mounted from clijosor/banner
+a30b835850bf: Mounted from clijosor/banner
+latest: digest: sha256:893b097ca0146a608e58027fe777f85f5272c92542b9f5f275736d7519f22d3d size: 1776
+
+NOTA: como el resto de compa�eros tenemos que subir la misma practica a dockerhub, la pagina hace como Dropbox. Mira si hay algun archivo que sea igual al que quiero intentar subir. En el caso de que exista dicho fichero, carga el que ya tenga en el sistema en vez de subir el que tienes tu. En este caso, a mi me ha copiado los archivos de clijosor, que es la ultima persona que ha subido los ficheros a dockerhub.
++++++++++++++++++++++++++++++++++++++++++++++
+--Práctica 1.6.
+1.2.3.
+Preparamos todos los ficheros que nos van a hacer falta.
+Primero: creamos el directorio ~/lagrs/practica01/cal
+Segundo: creamos dentro de cal, el directorio context. Ahi dentro van el Dockerfile y entrypoint.sh:
+
+alonsod@alpha01:~/largs/practica01/cal/context$ cat Dockerfile
+FROM ubuntu:18.04
+RUN apt-get update && apt-get upgrade -y && apt-get install -y bsdmainutils
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+
+alonsod@alpha01:~/largs/practica01/cal/context$ cat entrypoint.sh
+#!/bin/bash
+cal
+
+Tercero: en la carpeta cal, fuera de la carpeta context, creamos el script construye.sh:
+
+alonsod@alpha01:~/largs/practica01/cal$ cat construye.sh
+#!/bin/bash
+docker build -t alonsod29/cal context/
+
+Cuarto: seguimos en la misma carpeta que en el paso Tercero. Creamos los script lanza_aloncal01.sh y lanza_aloncal02.sh:
+
+alonsod@alpha01:~/largs/practica01/cal$ cat lanza_aloncal01.sh
+#!/bin/bash
+docker run --rm alonsod29/cal
+
+alonsod@alpha01:~/largs/practica01/cal$ cat lanza_aloncal02.sh
+#!/bin/bash
+docker run --rm alonsod29/cal
+
+4.
+Cada contenedor usa la imagen alonsod29/cal.
++++++++++++++++++++++++++++++++++++++++++++++
+--Práctica 1.7.
+
+alonsod@alpha01:~/lagrs/practica01/bind$ sh lanza_alonbind01.sh
+root@alonbind01:/# ls
+bin   dev            etc   lib    media  opt   root  sbin  sys  usr
+boot  entrypoint.sh  home  lib64  mnt    proc  run   srv   tmp  var
+root@alonbind01:/# cd home/
+root@alonbind01:/home# ls
+alonsod
+root@alonbind01:/home# cd alonsod/
+root@alonbind01:/home/alonsod# ls
+root@alonbind01:/home/alonsod# touch hola.txt
+root@alonbind01:/home/alonsod# exit
+alonsod@alpha01:~/lagrs/practica01/bind$ sh lanza_alonbind01.sh
+root@alonbind01:/# cd
+root@alonbind01:~# ls
+root@alonbind01:~# ls
+root@alonbind01:~#
+root@alonbind01:~# exit
+alonsod@alpha01:~/lagrs/practica01/bind$ sh lanza_alonbind01.sh
+root@alonbind01:/# ls
+bin   dev            etc   lib    media  opt   root  sbin  sys  usr
+boot  entrypoint.sh  home  lib64  mnt    proc  run   srv   tmp  var
+root@alonbind01:/# cd home/alonsod/
+root@alonbind01:/home/alonsod# ls
+hola.txt
+root@alonbind01:/home/alonsod# exit
++++++++++++++++++++++++++++++++++++++++++++++
+Práctica 1.8. Puesta en marcha de la máquina virtu
+1. Si hacemos md5sum del .ova: 
+alonsod@zeta14:/var/lib/vms/ubuntu.18.04.v01$ md5sum *.ova
+a2fddee602efccc61880fca864bf943d  ubuntu.18.04.ova
+
+Si leemos el fichero LEEME.txt:
+alonsod@zeta14:/var/lib/vms/ubuntu.18.04.v01$ cat LEEME.txt 
+2018.10.02
+
+Ubuntu server 18.04.1  amd64 con guest additions 
+
+usuario: user
+contraseña: lagrs
+
+md5:
+a2fddee602efccc61880fca864bf943d  ubuntu.18.04.ova
+
+Por tanto, vemos que coincide.
+
+2. Cambiamos el directorio home en virtualbox, al directorio /var/tmp/alonsod, para que no tire del servidor.
+
+3. Lanzamos la imagen en virtualbox. Despues de unos segundos, hacemos intro y nos pide el usuario (en nuestro caso es user) y la password(en nuestro caso es lagrs)
+
+4.Podemos hacer ping al host. Para ello hacemos en nuestro shell de los laboratorios: hostname -i
+Luego en virtualbox, en el ubuntu, hcemos un ping a la direccion que nos ha dado el hostname i.
+Lo que he hecho ha sido redirigir la salida en el virtualbox a un fichero llamado ping. De esta forma, hago scp desde el virtualbox hasta mi cuenta de linux de los laboratorios(lo he dejado en el directorio).
+La salida es esta:
+alonsod@zeta14:~/Escritorio$ ls | grep ping
+ping
+alonsod@zeta14:~/Escritorio$ cat ping
+PING 212.128.255.78 (212.128.255.78) 56(84) bytes of data.
+64 bytes from 212.128.255.78: icmp_seq=1 ttl=63 time=0.566 ms
+64 bytes from 212.128.255.78: icmp_seq=2 ttl=63 time=0.648 ms
+
+--- 212.128.255.78 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1027ms
+rtt min/avg/max/mdev = 0.566/0.607/0.648/0.041 ms
+
+5. Vamos a /etc/hosts, y lo editamos con sudo. Ponemos de nombre pc01.
+Una vez editado, lo guardamos y nos vamos al fichero /etc/cloud/cloud.cfg y ponemos la linea preserve_hostname a true.
+++++++++++++++++++++++++++
+Práctica 1.9. Montaje de tu directorio del laboratorio mediante sshfs
+
+1.	
+	Hacemos sudo su
+	Creamos primero el grupo admin: groupadd admin
+   	Ahora creamos el usuario: adduser alonsod
+	Anadimos a alonsod al grupo admin. Hacemos que el grupo admin sea el de por omision: usermod -g admin alonsod
+   	Cambiamos el usuario: su - alonsod
+	Tambien podemos salir de la sesion de user haciendo exit (o control + d) y loggearnos con alonsod
+
+2.
+	Una vez metemos al usuario alonsod en el grupo admin, ya puede usar sudo y por tanto instalar paquetes
+	
+3.
+	Hay que editar el fichero /etc/apt/sources.list, anadimos los repositorios de Ubuntu. Para ver el contenido de lo que hemos puesto, copio este fichero en los laboratorios, y desde mi portatil copio ese archivo con scp hacia los laboratorios. Con sshfs sera un poco menos tedioso todo este proceso.
+
+deb http://archive.ubuntu.com/ubuntu bionic main
+deb http://archive.ubuntu.com/ubuntu bionic-security main
+deb http://archive.ubuntu.com/ubuntu bionic-updates main
+
+deb http://archive.ubuntu.com/ubuntu bionic restricted
+deb http://archive.ubuntu.com/ubuntu bionic-security restricted
+deb http://archive.ubuntu.com/ubuntu bionic-updates restricted
+
+deb http://archive.ubuntu.com/ubuntu bionic universe
+deb http://archive.ubuntu.com/ubuntu bionic-security universe
+deb http://archive.ubuntu.com/ubuntu bionic-updates universe
+
+deb http://archive.ubuntu.com/ubuntu bionic multiverse
+deb http://archive.ubuntu.com/ubuntu bionic-security multiverse
+deb http://archive.ubuntu.com/ubuntu bionic-updates multiverse
+
+Una vez hecho esto, guardamos, hacemos sudo apt-get update, sudo apt-get upgrade, y hacemos reboot. Nos volvemos a loggear e instalamos sshfs con sudo apt-get install sshfs
+
+4.
+	HACER ESTE APARTADO CON sudo su porque si lo hacemos con sudo nos va a dar problemas
+	Vamos a montar mi home de los laboratorios en el directorio home de la maquina virtual:
+	sshfs -o nonempty alonsod@alpha02.aulas.gsyc.urjc.es: /home/alonsod
+	Si quitamos el flag -o nonempty debemos especificar la carpeta que queremos montar. En nuestro caso al poner ese flag lo que estamos haciendo es no especificar dicho directorio ya que implicitamente va a montar  el home. Es equivalente a poner:
+
+	sshfs alonsod@alpha02.aulas.gsyc.urjc.es:/home/alumnos/alonsod /home/alonsod
+	
+	OJO: SOLAMENTE ME DEJA EL VER EL CONTENIDO DE MI CARPETA DE LOS LABORATORIOS ESTANDO CON sudo su. SI INTENTO ACCEDER A ESA CARPETA SIN PRIVILEGIOS DE ROOT NO ME VA A DEJAR VERLA.
+5.
+	Creamos el directorio ~/bin desde la maquina virtual en nuestro home de los laboratorios por sshfs. Una vez hacemos eso, nos metemos dentro de ese directorio y creamos un archivo cualquiera. Desde un shell o desde los propios laboratorios, podemos ver si la carpeta y el archivo se han creado correctamente.
+En mi caso, lo hago compruebo por ssh desde mi casa.
+
+alonsod@alpha02:~$ cd bin/ ;ls
+prueba-sshfs.txt
+alonsod@alpha02:~/bin$ cat prueba-sshfs.txt 
+este archivo es para comprobar que funciona correctamente sshfs
+
+
+6.
+	Lo que hacemos es: sudo adduser noroot
+	No lo anadimos en el grupo admin
+7.
+	En nuestra maquina virtual, nos loggeamos con noroot. Creamos la carpeta /tmp/remoto: mkdir /tmp/remoto
+	Luego nos conectamos por sshfs: sshfs -o nonempty alonsod@alpha01.aulas.gsyc.urjc.es:/tmp /tmp/remoto/
+	Una vez hecho esto, nos vamos al directorio /tmp en nuestra maquina virtual y vemos que efectivamente se ha montado correctamente el /tmp de nuestro usuario de los laboratorios en nuestra maquina virtual.
++++++++++++++++++++++++++
+Practica 1.10. Docker en la máquina virtual
+
+En el apartado anterior se dio permisos de administrador a nuestro usuario en la maquina virtual. Por tanto ahora podemos instalar paquetes.
+Con wget vamos a instalarnos docker:
+/> wget https://get.docker.com -O get-docker.sh
+Esto nos descarga un script el cual ejecutamos con: bash get-docker.sh
+En el caso de que nos de permiso denegado, es muy posible que sea por los permisos, que le faltara el de ejecucion.
+
+Una vez hecho esto, podemos lanzar alguna imagen sencilla como un hola mundo para ver si ha funcionado correctamente la instalacion de docker.
+
+Unable to find image 'hola-mundo:latest' locally
+latest: Pulling from library/hola-mundo
+ca9e63cf6975: Pull complete 
+Digest: sha256:9601baf76017255ae6e5ff67720fe421f8d12be7262d7890d78589ab71b727bc
+Status: Downloaded newer image for hola-mundo:latest
+
+¡Hola de DockerCon EU 2015 (Barcelona)!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hola-mundo" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+
++++++++++++++++++++++++++
+Practica 1.11. Servidor de contenedores
+
+Lo que tenemos que hacer es crear la carpeta .docker. Ahi es donde vamos a meter todas las credenciales, para que podamos conectarnos al servidor de docker que ha montado Antonio:
+/> mkdir -p $HOME/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es 
+
+Una vez hemos hecho eso, nos copiamos las credenciales en ese directorio. Esto lo podemos hacer de varias formas. Yo prefiero usar scp porque me deja todos los ficheros que necesito en ese directorio:
+/> cd $HOME/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es
+/> scp alonsod@alpha01.aulas.gsyc.urjc.es:~/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es/* . 
+
+Una vez hecho eso, lo que hacemos es darle los permisos adecuados a las credenciales:
+/> chmod 600 $HOME/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es/*
+
+Luego despues exportamos las variables de entorno que necesitamos para poder conectarnos al servidor de docker:
+
+/> echo "export DOCKER_TLS_VERIFY=\"1\"" >> $HOME/.bashrc
+/> echo "export DOCKER_TLS_VERIFY=\"1\"" >> $HOME/.bash_profile
+/> echo "export DOCKER_HOST=\"tcp://212.128.254.5:2376\"" >> $HOME/.bashrc
+/> echo "export DOCKER_HOST=\"tcp://212.128.254.5:2376\"" >> $HOME/.bash_profile
+/> echo "export DOCKER_CERT_PATH=\"$HOME/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es\"" >> $HOME/.bashrc
+/> echo "export DOCKER_CERT_PATH=\"$HOME/.docker/machine/machines/dockerserver.aulas.gsyc.urjc.es\"" >> $HOME/.bash_profile
+/> echo "export DOCKER_MACHINE_NAME=\"dockerserver.aulas.gsyc.urjc.es\"" >> $HOME/.bashrc
+/> echo "export DOCKER_MACHINE_NAME=\"dockerserver.aulas.gsyc.urjc.es\"" >> $HOME/.bash_profile
+
+En el caso de no hacer esto, seguramente saldra un fallo al intentar lanzar docker images. Si hacemos 
+
+/> env | grep DOCKER 
+
+y vemos que no estan las variables de entorno que acabamos de añadir, lo que podemos hacer es
+
+/> . .bashrc
+
+De esta forma  ejecutamos .bashrc y asi dejamos configuradas las variables de entorno.
+
+Hago un reboot por si acaso, y me vuelvo a loggear. En principio no es necesario hacer esto pero por si acaso.
+Lanzo docker images. El resultado es el siguiente:
+REPOSITORY           TAG                 IMAGE ID            CREATED             SIZE
+mortuno/caa          latest              f2b61280bb35        3 days ago          323MB
+jluzon/bind          latest              729e6af00a98        6 days ago          130MB
+clijosor/bind        latest              a92589379b80        13 days ago         130MB
+<none>               <none>              fb348132f682        13 days ago         130MB
+aeworo/cal           latest              0c7320584839        13 days ago         156MB
+<none>               <none>              e6fcc8ee54cc        2 weeks ago         130MB
+alonsod29/cal        latest              089962dd3c92        2 weeks ago         130MB
+acarmona/bind        latest              96ba074c43e6        2 weeks ago         130MB
+alonsod29/banner     latest              153b930ab331        2 weeks ago         130MB
+<none>               <none>              cda132b90710        2 weeks ago         130MB
+acarmona/cal         latest              ff29fe0392f1        2 weeks ago         130MB
+jluzon/cal           latest              ff29fe0392f1        2 weeks ago         130MB
+<none>               <none>              d44c540dceba        2 weeks ago         130MB
+<none>               <none>              a918a6c21abf        2 weeks ago         130MB
+<none>               <none>              0d4091b0db88        2 weeks ago         130MB
+rmartin/bind         latest              95cf979fa33c        2 weeks ago         130MB
+alonsod29/bind       latest              6900ad67c4ea        2 weeks ago         130MB
+<none>               <none>              8b97182ab196        2 weeks ago         130MB
+jluzonlopez/banner   latest              7a4c6dbc92ff        2 weeks ago         130MB
+<none>               <none>              5510dc01853b        2 weeks ago         130MB
+<none>               <none>              5503be24c62c        2 weeks ago         130MB
+rmartin/cal          latest              10f1edd74c0a        2 weeks ago         130MB
+mortuno/bind         latest              7fad61db9216        3 weeks ago         130MB
+afcarmona/banner     latest              9091e33f8f80        3 weeks ago         130MB
+ralvarezmar/banner   latest              9091e33f8f80        3 weeks ago         130MB
+<none>               <none>              57f58bf4d7cc        3 weeks ago         130MB
+test/banner          latest              086d23ea442d        3 weeks ago         130MB
+<none>               <none>              eafa5fe719bc        3 weeks ago         130MB
+<none>               <none>              8bf97abde18c        3 weeks ago         117MB
+hello-world          latest              4ab4c602aa5e        6 weeks ago         1.84kB
+ubuntu               16.04               b9e15a5d1e1a        6 weeks ago         115MB
+ubuntu               18.04               cd6d8154f1e1        6 weeks ago         84.1MB
+ubuntu               latest              cd6d8154f1e1        6 weeks ago         84.1MB
+nginx                latest              06144b287844        6 weeks ago         109MB
+debian               latest              f2aae6ff5d89        6 weeks ago
+
++++++++++++++++++++++++++
+Practica 1.12. Contenedor con fichero hosts
+
+Creamos el directorio caa, en ~/lagrs/practica01
+/> mkdir ~lagrs/practica01/caa
+Creamos el directorio context en caa:
+/> mkdir ~lagrs/practica01/caa/context
+
+Creamos los ficheros construye.sh, lanza_aloncaa01.sh y lanza_aloncaa02.sh:
+/> touch construye.sh
+/> touch lanza_aloncaa01.sh
+/> touch lanza_aloncaa02.sh
+
+Dentro de el directorio context, creamos el Dockerfile y entrypoint.sh:
+/> touch Dockerfile
+/> touch entrypoint.sh
+
+IMPORTANTE: DAR PERMISOS DE EJECUCION A Dockerfile y entrypoint.sh. 
+SINO NOS DARA ERROR AL EJECUTAR EL lanza_aloncaa01.sh y lanza_aloncaa02.sh
+
+/> chmod u+x Dockerfile
+/> chmod u+x entrypoint.sh
+
+Nos copiamos el fichero /etc/hosts a la carpeta ~lagrs/practica01/caa/context, y renombramos el fichero a delta_hosts:
+/> cp /etc/hosts ~/lagrs/practica01/caa/context
+/> mv hosts delta_hosts
+
+Metemos la siguiente configuracion en los ficheros Dockerfile, entrypoint.sh, construye.sh, lanza_aloncaa01.sh y lanza_aloncaa02.sh (respectivamente):
+
+alonsod@alpha01:~/lagrs/practica01/caa/context$ cat Dockerfile entrypoint.sh 
+FROM ubuntu:18.04
+RUN apt-get update && apt-get upgrade -y \
+&& apt-get install -y libnet-ifconfig-wrapper-perl \
+&& apt-get install -y iputils-ping \
+&& apt-get install -y ssh
+COPY ./delta_hosts /tmp
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+
+#!/bin/bash
+cat /tmp/delta_hosts >> /etc/hosts
+/bin/bash
+
+alonsod@alpha01:~/lagrs/practica01/caa$ cat construye.sh 
+#!/bin/bash
+docker build -t alonsod/caa context/
+
+alonsod@alpha01:~/lagrs/practica01/caa$ cat lanza_aloncaa*
+#!/bin/bash
+docker run --rm -it -h aloncaa01 --name aloncaa01 alonsod/caa
+
+#!/bin/bash
+docker run --rm -it -h aloncaa02 --name aloncaa02 alonsod/caa
+
+Para ver si funciona nuestra maquina virtual, lo que tenemos que hacer es lanzarla, loggearnos con nuestro usuario (en mi caso alonsod) y hacer docker images | grep alon
+De esta forma podemos comprobar que la imagen que hemos creado está ahi y la lanzamos creando un contenedor; es decir, hacemos lo mismo que el contenido de lanza_aloncaa01.sh: docker run --rm -it -h aloncaa02 --name aloncaa02 alonsod/caa
+Una vez hecho esto, nos metera en el contenedor y desde ahi hacemos ssh alonsod@alpha03
+nos pide la contrasena y listo.
+
++++++++++++++++++++++++++
+Practica 1.13. Conectividad entre contenedores
+
+1.Creamos el nuevo directorio cab
+/> mkdir ~/lagrs/practica01/cab
+
+2.Como necesitamos hacer ifconfig y ping, vamos a necesitar la configuracion del apartado 1.12
+
+3.Los ficheros que vamos a necesitar, junto a su contenido, son los siguientes:
+NOTA: el fichero con los hosts de la etsit no lo los pongo porque son muchos. Estan en /etc/hosts en cualquier maquina de los laboratorios
+
+alonsod@alpha01:~/lagrs/practica01/cab/context$ cat Dockerfile               
+FROM ubuntu:18.04
+RUN apt-get update && apt-get upgrade -y \
+&& apt-get install -y libnet-ifconfig-wrapper-perl \
+&& apt-get install -y iputils-ping \
+&& apt-get install -y ssh \
+&& apt-get install -y openssh-server
+COPY ./delta_hosts /tmp
+
+RUN mkdir /var/run/sshd
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+COPY entrypoint.sh /
+
+EXPOSE 22
+ENTRYPOINT ["/entrypoint.sh"]
+
+alonsod@alpha01:~/lagrs/practica01/cab/context$ cat entrypoint.sh 
+#!/bin/bash
+cat /tmp/delta_hosts >> /etc/hosts
+/usr/sbin/sshd
+/bin/bash
+
+alonsod@alpha01:~/lagrs/practica01/cab$ cat construye.sh 
+#!/bin/bash
+docker build -t alonsod/cab context/
+
+alonsod@alpha01:~/lagrs/practica01/cab$ cat lanza_aloncab01.sh 
+#!/bin/bash
+docker run --rm -it -h aloncab01 --name aloncab01 alonsod/cab
+
+alonsod@alpha01:~/lagrs/practica01/cab$ cat lanza_aloncab02.sh 
+#!/bin/bash
+docker run --rm -it -h aloncab02 --name aloncab02 alonsod/cab
+
+
+4. Con la configuracion de Dockerfile y entrypoint podemos lanzar el servidor de ssh
+
+5. Ejecutamos uno de los ficheros lanza_aloncab01.sh. Para saber la IP del contenedor, lo que podemos hacer es, o bien, ifconfig o hostname -i:
+
+alonsod@alpha01:~/lagrs/practica01/cab$ ./lanza_aloncab01.sh 
+root@aloncab01:/# ifconfig
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.17.0.11  netmask 255.255.0.0  broadcast 172.17.255.255
+        ether 02:42:ac:11:00:0b  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+root@aloncab01:/# hostname -i
+172.17.0.11
+
+6. Para poder ejecutar el ping correctamente, lo que debemos hacer es lanzar los ficheros lanza_aloncab01.sh y lanza_aloncab02.sh. En uno de ellos hacemos un hostname -i (por ejemplo en lanza_aloncab02.sh, cuya IP es: 172.17.0.15), y hacemos el ping.
+
+root@aloncab01:/# ping -c 4 -W 3 172.17.0.15
+PING 172.17.0.15 (172.17.0.15) 56(84) bytes of data.
+64 bytes from 172.17.0.15: icmp_seq=1 ttl=64 time=0.781 ms
+64 bytes from 172.17.0.15: icmp_seq=2 ttl=64 time=0.080 ms
+64 bytes from 172.17.0.15: icmp_seq=3 ttl=64 time=0.115 ms
+64 bytes from 172.17.0.15: icmp_seq=4 ttl=64 time=0.061 ms
+
+--- 172.17.0.15 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3079ms
+rtt min/avg/max/mdev = 0.061/0.259/0.781/0.302 ms
+
+En el caso de querer comprobar que funciona el ping solo cuando tenemos lanzados los dos contenedores, si cerramos uno de ellos, vemos que si hacemos el ping, este se queda colgado. Es obvio puesto que nadie esta al otro lado para responder.
+
+7. Para añadir a un nuevo usuario, hacemos: adduser juan , en uno de los contenedores. Desde el otro contenedor, lo que hacemos es un ssh al contenedor que ha creado al usuario:
+NOTA: usuario juan, password juan
+
+root@aloncab02:/# ssh juan@172.17.0.11
+juan@172.17.0.11's password: 
+Welcome to Ubuntu 18.04.1 LTS (GNU/Linux 4.15.0-34-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+This system has been minimized by removing packages and content that are
+not required on a system that users do not log into.
+
+To restore this content, you can run the 'unminimize' command.
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+juan@aloncab01:~$ ls
+juan@aloncab01:~$ logout
+Connection to 172.17.0.11 closed.
+
+Si mientras esta conectado, hacemos who en el contenedor anfitrion nos aparece que hay una sesion iniciada, del usuario llamado juan.
+ 
